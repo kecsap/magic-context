@@ -270,6 +270,7 @@ async function executeDreaming(
             text: string,
             params: NotificationParams,
         ) => Promise<void>;
+        toastDurationMs?: number;
         dreamer?: {
             config: DreamerConfig;
             projectPath: string;
@@ -288,11 +289,15 @@ async function executeDreaming(
     },
     sessionId: string,
 ): Promise<never> {
+    const dreamNotificationParams: NotificationParams = {
+        toastDurationMs: deps.toastDurationMs ?? 5000,
+    };
+
     if (!deps.dreamer?.config?.tasks?.length) {
         await deps.sendNotification(
             sessionId,
             "## /ctx-dream\n\nDreaming is not configured for this project.",
-            {},
+            dreamNotificationParams,
         );
         throwSentinel("CTX-DREAM");
     }
@@ -303,11 +308,11 @@ async function executeDreaming(
     // runner with an unexpired lease is never deleted just because it is older than 2m.
     const entry = enqueueDream(deps.db, deps.dreamer.projectPath, "manual", true);
     if (!entry) {
-        await deps.sendNotification(sessionId, "Dream already queued for this project", {});
+        await deps.sendNotification(sessionId, "Dream already queued for this project", dreamNotificationParams);
         throwSentinel("CTX-DREAM");
     }
 
-    await deps.sendNotification(sessionId, "Starting dream run...", {});
+    await deps.sendNotification(sessionId, "Starting dream run...", dreamNotificationParams);
 
     const result = deps.dreamer.executeDream
         ? await deps.dreamer.executeDream(sessionId)
@@ -334,7 +339,7 @@ async function executeDreaming(
         result
             ? summarizeDreamResult(result)
             : "Dream queued, but another worker is already processing the queue.",
-        {},
+        dreamNotificationParams,
     );
     throwSentinel("CTX-DREAM");
 }
@@ -342,6 +347,7 @@ async function executeDreaming(
 export function createMagicContextCommandHandler(deps: {
     db: Database;
     protectedTags: number;
+    nudgeIntervalTokens?: number;
     executeThresholdPercentage?: number | { default: number; [modelKey: string]: number };
     executeThresholdTokens?: { default?: number; [modelKey: string]: number | undefined };
     historyBudgetPercentage?: number;
@@ -366,6 +372,8 @@ export function createMagicContextCommandHandler(deps: {
         text: string,
         params: NotificationParams,
     ) => Promise<void>;
+    /** Configured toast lifetime (ms) forwarded into diagnostics logs. */
+    toastDurationMs?: number;
     sidekick?: {
         config: SidekickConfig;
         projectPath: string;
@@ -434,8 +442,20 @@ export function createMagicContextCommandHandler(deps: {
             if (isStatus) {
                 if (isTuiConnected(sessionId)) {
                     // In TUI, push an RPC action so the TUI poller shows a native dialog
-                    pushNotification("action", { action: "show-status-dialog" }, sessionId);
-                    sessionLog(sessionId, "command ctx-status: pushed show-status-dialog to TUI");
+                    pushNotification(
+                        "action",
+                        {
+                            action: "show-status-dialog",
+                            toast_duration_ms: deps.toastDurationMs ?? 5000,
+                        },
+                        sessionId,
+                    );
+                    sessionLog(
+                        sessionId,
+                        `command ctx-status: pushed show-status-dialog to TUI (toast_duration_ms=${String(
+                            deps.toastDurationMs ?? 5000,
+                        )})`,
+                    );
                     throwSentinel(input.command);
                 }
                 const liveModelKey = deps.getLiveModelKey?.(sessionId);

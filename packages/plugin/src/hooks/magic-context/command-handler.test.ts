@@ -721,13 +721,13 @@ describe("createMagicContextCommandHandler", () => {
                 1,
                 "ses-dream",
                 "Starting dream run...",
-                {},
+                { toastDurationMs: 5000 },
             );
             expect(sendNotification).toHaveBeenNthCalledWith(
                 2,
                 "ses-dream",
                 expect.stringContaining("### Tasks"),
-                {},
+                { toastDurationMs: 5000 },
             );
         });
 
@@ -775,7 +775,7 @@ describe("createMagicContextCommandHandler", () => {
                 3,
                 "ses-dream",
                 "Dream already queued for this project",
-                {},
+                { toastDurationMs: 5000 },
             );
             expect(executeDream).toHaveBeenCalledTimes(1);
         });

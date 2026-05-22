@@ -3,6 +3,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 import { detectConfigFile, parseJsonc } from "../shared/jsonc-parser";
+import { log } from "../shared/logger";
 import { migrateLegacyAgentEnabledInMemory } from "./agent-disable";
 import { migrateLegacyExperimental } from "./migrate-experimental";
 import {

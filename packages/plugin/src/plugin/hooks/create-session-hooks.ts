@@ -44,6 +44,8 @@ export function createSessionHooks(args: {
                 ctx_reduce_enabled: pluginConfig.ctx_reduce_enabled,
                 cache_ttl: pluginConfig.cache_ttl,
                 clear_reasoning_age: pluginConfig.clear_reasoning_age,
+                nudge_interval_tokens: pluginConfig.nudge_interval_tokens,
+                toast_duration_ms: pluginConfig.toast_duration_ms,
                 execute_threshold_percentage:
                     pluginConfig.execute_threshold_percentage ??
                     DEFAULT_EXECUTE_THRESHOLD_PERCENTAGE,
