@@ -118,6 +118,7 @@ Higher-tier models with longer cache windows benefit from a longer TTL. Setting 
 | `cache_ttl` | `string` or `object` | `"5m"` | Time after a response before applying pending ops. String or per-model map. |
 | `protected_tags` | `number` (1–100) | `20` | Last N active tags immune from immediate dropping. |
 | `nudge_interval_tokens` | `number` | `10000` | Minimum token growth between rolling nudges. |
+| `toast_duration_ms` | `number` (1000–60000) | `5000` | TUI toast lifetime for Magic Context notifications in milliseconds. Increase this if toasts disappear too quickly. |
 | `execute_threshold_percentage` | `number` (20–80) or `object` | `65` | Context usage that forces queued ops to execute. Capped at 80% max for cache safety. Supports per-model map. |
 | `execute_threshold_tokens` | `object` (per-model map) | — | **Optional absolute-tokens variant of `execute_threshold_percentage`.** Per-model map (e.g. `{ "default": 150000, "github-copilot/gpt-5.2-codex": 40000 }`). When set for a model, overrides the percentage-based threshold for that model. Clamped to `80% × context_limit` with a warn log. Requires a resolvable context limit — falls through to percentage if unavailable. See below. |
 | `auto_drop_tool_age` | `number` | `100` | Auto-drop tool outputs older than N tags during execution. |
@@ -617,6 +618,7 @@ Tier boundaries are hardcoded to keep behavior predictable and prevent cache-bus
   "protected_tags": 10,
   "auto_drop_tool_age": 50,
   "drop_tool_structure": true,
+  "toast_duration_ms": 12000,
   "history_budget_percentage": 0.15,
   "compaction_markers": true,
   "compressor": {

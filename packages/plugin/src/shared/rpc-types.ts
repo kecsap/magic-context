@@ -94,6 +94,8 @@ export interface StatusDetail extends SidebarSnapshot {
     historyBlockTokens: number;
     compressionBudget: number | null;
     compressionUsage: string | null;
+    /** Effective configured toast duration in ms after config resolution. */
+    toastDurationMs: number;
 }
 
 export interface RpcNotificationMessage {

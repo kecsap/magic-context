@@ -190,6 +190,8 @@ export interface MagicContextConfig {
     dreamer?: DreamerConfig;
     cache_ttl: string | { default: string; [modelKey: string]: string };
     nudge_interval_tokens: number;
+    /** TUI toast lifetime in milliseconds for Magic Context notifications. Default: 5000. */
+    toast_duration_ms?: number;
     execute_threshold_percentage: number | { default: number; [modelKey: string]: number };
     /** Absolute token thresholds per model. When set for a given model (or via `default`),
      *  this overrides `execute_threshold_percentage` for that model. Useful for hard caps
@@ -310,6 +312,8 @@ export const MagicContextConfigSchema = z
             .default("5m"),
         /** Minimum token growth between low-priority rolling nudges (default: DEFAULT_NUDGE_INTERVAL_TOKENS) */
         nudge_interval_tokens: z.number().min(1000).default(DEFAULT_NUDGE_INTERVAL_TOKENS),
+        /** TUI toast lifetime in milliseconds for Magic Context notifications (min: 1000, max: 60000, default: 5000) */
+        toast_duration_ms: z.number().min(1_000).max(60_000).default(5_000),
         /** Context percentage that forces queued operations to execute. Number or per-model object ({ default: 65, "provider/model": 45 }). Values above 80 are rejected because the runtime caps at 80% for cache safety (MAX_EXECUTE_THRESHOLD). Default: DEFAULT_EXECUTE_THRESHOLD_PERCENTAGE */
         execute_threshold_percentage: z
             .union([

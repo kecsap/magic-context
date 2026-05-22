@@ -289,6 +289,8 @@ export function createMagicContextCommandHandler(deps: {
         text: string,
         params: NotificationParams,
     ) => Promise<void>;
+    /** Configured toast lifetime (ms) forwarded into diagnostics logs. */
+    toastDurationMs?: number;
     sidekick?: {
         config: SidekickConfig;
         projectPath: string;
@@ -351,13 +353,25 @@ export function createMagicContextCommandHandler(deps: {
                 deps.onFlush?.(sessionId);
             }
 
-            if (isStatus) {
-                if (isTuiConnected()) {
-                    // In TUI, push an RPC action so the TUI poller shows a native dialog
-                    pushNotification("action", { action: "show-status-dialog" }, sessionId);
-                    sessionLog(sessionId, "command ctx-status: pushed show-status-dialog to TUI");
-                    throwSentinel(input.command);
-                }
+                if (isStatus) {
+                    if (isTuiConnected()) {
+                        // In TUI, push an RPC action so the TUI poller shows a native dialog
+                        pushNotification(
+                            "action",
+                            {
+                                action: "show-status-dialog",
+                                toast_duration_ms: deps.toastDurationMs ?? 5000,
+                            },
+                            sessionId,
+                        );
+                        sessionLog(
+                            sessionId,
+                            `command ctx-status: pushed show-status-dialog to TUI (toast_duration_ms=${String(
+                                deps.toastDurationMs ?? 5000,
+                            )})`,
+                        );
+                        throwSentinel(input.command);
+                    }
                 const liveModelKey = deps.getLiveModelKey?.(sessionId);
                 const liveContextLimit = deps.getContextLimit?.(sessionId);
                 const statusOutput = executeStatus(

@@ -74,6 +74,7 @@ export interface MagicContextDeps {
         protected_tags: number;
         ctx_reduce_enabled?: boolean;
         nudge_interval_tokens?: number;
+        toast_duration_ms?: number;
         auto_drop_tool_age?: number;
         drop_tool_structure?: boolean;
         clear_reasoning_age?: number;
@@ -345,6 +346,7 @@ export function createMagicContextHook(deps: MagicContextDeps) {
                 liveModelBySession,
                 variantBySession,
                 agentBySession,
+                deps.config.toast_duration_ms,
             ),
         getModelKey: (sessionId) => {
             const model = liveModelBySession.get(sessionId);
@@ -408,6 +410,7 @@ export function createMagicContextHook(deps: MagicContextDeps) {
                 liveModelBySession,
                 variantBySession,
                 agentBySession,
+                deps.config.toast_duration_ms,
             ),
         nudgePlacements,
         onSessionCacheInvalidated: (sessionId: string) => {
@@ -470,6 +473,7 @@ export function createMagicContextHook(deps: MagicContextDeps) {
     const commandHandler = createMagicContextCommandHandler({
         db,
         protectedTags: deps.config.protected_tags,
+        toastDurationMs: deps.config.toast_duration_ms,
         nudgeIntervalTokens: deps.config.nudge_interval_tokens ?? DEFAULT_NUDGE_INTERVAL_TOKENS,
         executeThresholdPercentage: deps.config.execute_threshold_percentage ?? 65,
         executeThresholdTokens: deps.config.execute_threshold_tokens,
@@ -521,6 +525,7 @@ export function createMagicContextHook(deps: MagicContextDeps) {
                                   liveModelBySession,
                                   variantBySession,
                                   agentBySession,
+                                  deps.config.toast_duration_ms,
                               ),
                           historianTwoPass: deps.config.historian?.two_pass === true,
                           // Issue #44: respect memory feature gates from /ctx-recomp too.
@@ -554,6 +559,7 @@ export function createMagicContextHook(deps: MagicContextDeps) {
                     liveModelBySession,
                     variantBySession,
                     agentBySession,
+                    deps.config.toast_duration_ms,
                 ),
                 ...params,
             });

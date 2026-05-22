@@ -6,6 +6,8 @@ export interface NotificationParams {
     variant?: string;
     providerId?: string;
     modelId?: string;
+    /** TUI toast lifetime in milliseconds (default: 5000). */
+    toastDurationMs?: number;
 }
 
 interface NotificationClient {
@@ -69,25 +71,21 @@ export async function sendIgnoredMessage(
     const { isTuiConnected: checkTui } = await import("../../shared/rpc-notifications");
     if (checkTui()) {
         try {
-            const c = client as Record<string, unknown>;
-            const tui = c?.tui as Record<string, unknown> | undefined;
-            if (typeof tui?.showToast === "function") {
-                // Intentional: call via property access to preserve `this` binding on the SDK client.
-                // The tui object is an SDK-generated client where methods live on the prototype.
-                const tuiClient = tui as Record<string, (...args: unknown[]) => Promise<unknown>>;
-                await tuiClient.showToast({
-                    body: {
-                        title: extractToastTitle(text),
-                        message: text.length > 200 ? `${text.slice(0, 200)}…` : text,
-                        variant: inferToastVariant(text),
-                        duration: 5000,
-                    },
-                });
-                return;
-            }
+            const { pushNotification } = await import("../../shared/rpc-notifications");
+            pushNotification(
+                "toast",
+                {
+                    title: extractToastTitle(text),
+                    message: text.length > 200 ? `${text.slice(0, 200)}…` : text,
+                    variant: inferToastVariant(text),
+                    duration: params.toastDurationMs ?? 5000,
+                },
+                sessionId,
+            );
+            return;
         } catch {
-            // showToast failed or tui client is unavailable — fall through to ignored message.
-            sessionLog(sessionId, "TUI showToast failed, falling back to ignored message");
+            // RPC enqueue failed — fall through to ignored message.
+            sessionLog(sessionId, "TUI RPC toast enqueue failed, falling back to ignored message");
         }
     }
     const agent = params.agent || undefined;

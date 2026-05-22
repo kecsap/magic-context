@@ -479,6 +479,7 @@ export function buildStatusDetail(
         historyBlockTokens: 0,
         compressionBudget: null,
         compressionUsage: null,
+        toastDurationMs: 5000,
     };
 
     try {
@@ -573,6 +574,12 @@ export function buildStatusDetail(
             if (typeof config.history_budget_percentage === "number") {
                 detail.historyBudgetPercentage = config.history_budget_percentage;
             }
+            detail.toastDurationMs = resolveConfigValue<number>(
+                config,
+                "toast_duration_ms",
+                modelKey,
+                5000,
+            );
         }
 
         // Derived values
@@ -635,6 +642,7 @@ export function registerRpcHandlers(
             liveSessionState.liveModelBySession,
             liveSessionState.variantBySession,
             liveSessionState.agentBySession,
+            config.toast_duration_ms,
         );
 
     const injectionBudgetTokens = config.memory?.injection_budget_tokens;
@@ -751,6 +759,11 @@ export function registerRpcHandlers(
             });
 
         return { ok: true };
+    });
+
+    rpcServer.handle("toast-duration", async () => {
+        const resolved = resolveConfigValue<number>(rawConfig, "toast_duration_ms", undefined, 5000);
+        return { toastDurationMs: resolved };
     });
 
     rpcServer.handle("pending-notifications", async (params) => {
